@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: sael_password
       POSTGRES_DB: sael_db
     ports:
-      - "5432:5432"
+      - "5444:5432"
     volumes:
       - sael_db_data:/var/lib/postgresql/data
 

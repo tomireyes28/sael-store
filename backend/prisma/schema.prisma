@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    // ej: "Premier League", "Liga Profesional"
+  slug      String    @unique
+  products  Product[]
+}
+
+model Product {
+  id          String           @id @default(uuid())
+  name        String           // ej: "Camiseta Titular Boca Juniors 2024"
+  slug        String           @unique
+  description String?
+  price       Float            
+  images      String[]         // ej: ["/boca-titular-1.jpg", "/boca-titular-2.jpg"]
+  categoryId  String
+  category    Category         @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[] 
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model ProductVariant {
+  id          String      @id @default(uuid())
+  productId   String
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size        String      // ej: "S", "M", "L", "XL"
+  stock       Int         // Cantidad disponible por talle
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  shippingAddress String      
+  shippingZip     String
+  shippingCost    Float       
+  totalAmount     Float       
+  status          String      @default("PENDING") // PENDING, PAID, SHIPPED, CANCELLED
+  paymentId       String?     
+  items           OrderItem[]
+
+  couponId        String?
+  coupon          Coupon?     @relation(fields: [couponId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+}
+
+model OrderItem {
+  id        String         @id @default(uuid())
+  orderId   String
+  order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+  quantity  Int            
+  price     Float          
+}
+
+model Coupon {
+  id                 String    @id @default(uuid())
+  code               String    @unique // ej: "SAEL10", "BIENVENIDA"
+  discountPercentage Float     // ej: 10 para 10% off
+  isActive           Boolean   @default(true)
+  validUntil         DateTime? // Fecha de vencimiento opcional
+  maxUses            Int?      // Límite total de usos permitidos
+  currentUses        Int       @default(0)
+  orders             Order[]
+  createdAt          DateTime  @default(now())
+}
