@@ -6,9 +6,10 @@ import { AuthModule } from './auth/auth.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { VariantsModule } from './variants/variants.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, VariantsModule],
+  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, VariantsModule, CloudinaryModule],
   controllers: [AppController],
   providers: [AppService],
 })
