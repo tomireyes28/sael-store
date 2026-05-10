@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: sael_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: sael_user
+      POSTGRES_PASSWORD: sael_password
+      POSTGRES_DB: sael_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - sael_db_data:/var/lib/postgresql/data
+
+volumes:
+  sael_db_data:
