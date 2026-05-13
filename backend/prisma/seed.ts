@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
 
-// Usamos la misma conexión con el adaptador que armamos para el PrismaService
+// Conexión con el adaptador para evitar problemas de inicialización
 const dbUrl = "postgresql://sael_user:sael_password@localhost:5444/sael_db?schema=public";
 const pool = new Pool({ connectionString: dbUrl });
 const adapter = new PrismaPg(pool);
@@ -24,7 +24,7 @@ async function main() {
   });
   console.log('✅ Administrador verificado (admin@sael.com).');
 
-  // 2. Limpiar catálogo anterior (el orden es importante por las relaciones)
+  // 2. Limpiar datos anteriores (el orden respeta las relaciones de la DB)
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.productVariant.deleteMany();
@@ -37,7 +37,7 @@ async function main() {
   const selecciones = await prisma.category.create({ data: { name: 'Selecciones', slug: 'selecciones' } });
   console.log('✅ Categorías creadas.');
 
-  // 4. Crear Productos
+  // 4. Datos de Productos
   const productsData = [
     {
       name: 'Camiseta Boca Juniors Titular 2024',
@@ -73,8 +73,9 @@ async function main() {
     }
   ];
 
+  // Insertar Productos y sus Variantes
   for (const prod of productsData) {
-    const product = await prisma.product.create({
+    await prisma.product.create({
       data: {
         ...prod,
         variants: {
@@ -87,7 +88,64 @@ async function main() {
         }
       }
     });
-    console.log(`👕 Producto insertado: ${product.name}`);
+    console.log(`👕 Producto insertado: ${prod.name}`);
+  }
+
+  // 5. Crear Pedidos de Prueba
+  console.log('📦 Generando pedidos de prueba...');
+  
+  // Obtenemos variantes recién creadas para asociarlas a los pedidos
+  const variantes = await prisma.productVariant.findMany({
+    include: { product: true }
+  });
+
+  if (variantes.length >= 2) {
+    // Pedido 1: Pagado
+    await prisma.order.create({
+      data: {
+        customerName: 'Lionel Messi',
+        customerEmail: 'liomessi@sael.com',
+        customerPhone: '1122334455',
+        shippingAddress: 'Av. Siempre Viva 123',
+        shippingZip: '1001',
+        shippingCost: 5000,
+        totalAmount: variantes[0].product.price + 5000,
+        status: 'PAID',
+        items: {
+          create: [
+            {
+              variantId: variantes[0].id,
+              quantity: 1,
+              price: variantes[0].product.price
+            }
+          ]
+        }
+      }
+    });
+
+    // Pedido 2: Pendiente
+    await prisma.order.create({
+      data: {
+        customerName: 'Julian Alvarez',
+        customerEmail: 'arana@sael.com',
+        customerPhone: '1199887766',
+        shippingAddress: 'Paseo de la Castellana 456',
+        shippingZip: '28046',
+        shippingCost: 4500,
+        totalAmount: (variantes[1].product.price * 2) + 4500,
+        status: 'PENDING',
+        items: {
+          create: [
+            {
+              variantId: variantes[1].id,
+              quantity: 2,
+              price: variantes[1].product.price
+            }
+          ]
+        }
+      }
+    });
+    console.log('✅ Pedidos de prueba creados.');
   }
 
   console.log('✨ ¡Base de datos poblada con éxito!');

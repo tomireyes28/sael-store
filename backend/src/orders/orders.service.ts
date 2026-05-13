@@ -88,10 +88,22 @@ export class OrdersService {
     });
   }
 
-  async findAll(): Promise<Order[]> {
+  findAll() {
     return this.prisma.order.findMany({
-      include: { items: { include: { variant: { include: { product: true } } } } },
-      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
   }
 }
