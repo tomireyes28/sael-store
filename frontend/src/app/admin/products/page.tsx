@@ -1,19 +1,13 @@
 // src/app/admin/products/page.tsx
 'use client';
 
-import { Plus, Search, Package } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useProducts } from '@/hooks/useProducts';
+import { ProductTable } from '@/components/admin/ProductTable';
 
 export default function ProductsPage() {
-  // Después conectaremos esto al backend real
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Simulamos que carga rápido para ver la interfaz
-    setTimeout(() => setLoading(false), 500);
-  }, []);
+  const { products, loading } = useProducts();
 
   return (
     <div className="p-8">
@@ -31,7 +25,6 @@ export default function ProductsPage() {
         </Link>
       </div>
 
-      {/* Buscador */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 mb-6 flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
@@ -43,34 +36,9 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Tabla / Estado Vacío */}
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-gray-400">Cargando catálogo...</div>
-        ) : products.length === 0 ? (
-          <div className="p-12 text-center">
-            <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Package className="text-gray-400" size={32} />
-            </div>
-            <h3 className="text-xl font-medium text-white mb-2">No hay productos todavía</h3>
-            <p className="text-gray-400 mb-6">Empezá agregando tu primera camiseta al catálogo.</p>
-          </div>
-        ) : (
-          <table className="w-full text-left text-sm text-gray-400">
-            <thead className="bg-gray-950 text-xs uppercase font-semibold text-gray-500 border-b border-gray-800">
-              <tr>
-                <th className="px-6 py-4">Producto</th>
-                <th className="px-6 py-4">Categoría</th>
-                <th className="px-6 py-4">Precio</th>
-                <th className="px-6 py-4">Stock Total</th>
-                <th className="px-6 py-4 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {/* Acá irán las filas cuando traigamos los datos de la DB */}
-            </tbody>
-          </table>
-        )}
+        {/* Le pasamos los datos al componente hijo */}
+        <ProductTable products={products} loading={loading} />
       </div>
     </div>
   );

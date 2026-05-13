@@ -31,12 +31,16 @@ export class ProductsService {
     });
   }
 
-  async findAll(): Promise<Product[]> {
+  findAll() {
     return this.prisma.product.findMany({
+      // Agregamos esto para que nos traiga la data anidada
       include: {
-        category: true, // Trae los datos de la liga anidada
-        variants: true, // Trae los talles (por ahora va a venir vacío)
+        category: true,
+        variants: true,
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
   }
 
