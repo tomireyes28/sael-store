@@ -6,10 +6,12 @@ import { Pool } from 'pg';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
   constructor() {
-    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    // Si process.env.DATABASE_URL llega vacío por culpa de Node, usamos la tuya directamente para que no falle.
+    const dbUrl = process.env.DATABASE_URL || "postgresql://sael_user:sael_password@localhost:5444/sael_db?schema=public";
+    
+    const pool = new Pool({ connectionString: dbUrl });
     const adapter = new PrismaPg(pool);
     
-    // Le pasamos el adapter tal cual lo tenías
     super({ adapter });
   }
 
