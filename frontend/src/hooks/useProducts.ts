@@ -1,8 +1,6 @@
-// src/hooks/useProducts.ts
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
-// Exportamos la interfaz para poder usarla en otros componentes y mantener el tipado fuerte (cero anys)
 export interface Product {
   id: string;
   name: string;
@@ -20,7 +18,9 @@ export function useProducts() {
     const fetchProducts = async () => {
       try {
         const token = Cookies.get('sael_admin_token');
-        const res = await fetch('http://localhost:3000/products', {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const res = await fetch(`${apiUrl}/products`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

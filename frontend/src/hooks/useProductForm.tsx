@@ -1,4 +1,3 @@
-// src/hooks/useProductForm.ts
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
@@ -46,13 +45,13 @@ export function useProductForm() {
     
     setLoading(true);
     const token = Cookies.get('sael_admin_token');
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
     try {
-      // 1. Subir Imagen
       const imageFormData = new FormData();
       imageFormData.append('file', imageFile);
 
-      const imageRes = await fetch('http://localhost:3000/images/upload', {
+      const imageRes = await fetch(`${apiUrl}/images/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },
         body: imageFormData,
@@ -62,11 +61,9 @@ export function useProductForm() {
       const imageData = await imageRes.json();
       const imageUrl = imageData.url; 
 
-      // 2. Crear Producto
-      // Generamos un slug simple a partir del nombre
       const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-      const productRes = await fetch('http://localhost:3000/products', {
+      const productRes = await fetch(`${apiUrl}/products`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -77,7 +74,7 @@ export function useProductForm() {
           slug: slug,
           description: formData.description,
           price: Number(formData.price),
-          categoryId: formData.categoryId, // Asumimos que categoryId es un String (UUID)
+          categoryId: formData.categoryId,
           images: [imageUrl],
         }),
       });
@@ -85,9 +82,8 @@ export function useProductForm() {
       if (!productRes.ok) throw new Error('Error al crear el producto');
       const productData = await productRes.json();
 
-      // 3. Crear Variantes
       await Promise.all(variants.map(variant => 
-        fetch('http://localhost:3000/variants', {
+        fetch(`${apiUrl}/variants`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
