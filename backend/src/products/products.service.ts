@@ -17,7 +17,6 @@ export class ProductsService {
       throw new ConflictException('Ya existe un producto con este slug');
     }
 
-    // Verificamos que la categoría exista antes de crear el producto
     const categoryExists = await this.prisma.category.findUnique({
       where: { id: createProductDto.categoryId },
     });
@@ -33,7 +32,6 @@ export class ProductsService {
 
   findAll() {
     return this.prisma.product.findMany({
-      // Agregamos esto para que nos traiga la data anidada
       include: {
         category: true,
         variants: true,
@@ -44,6 +42,7 @@ export class ProductsService {
     });
   }
 
+  // 1. Buscar por ID (Uso interno: Admin, Update, Delete)
   async findOne(id: string): Promise<Product> {
     const product = await this.prisma.product.findUnique({
       where: { id },
@@ -57,8 +56,23 @@ export class ProductsService {
     return product;
   }
 
+  // 2. Buscar por Slug (Uso público: Tienda)
+  async findBySlug(slug: string): Promise<Product> {
+    const product = await this.prisma.product.findUnique({
+      where: { slug },
+      include: { category: true, variants: true },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Producto con slug ${slug} no encontrado`);
+    }
+
+    return product;
+  }
+
+  // Ahora el remove funciona perfecto validando por ID
   async remove(id: string): Promise<Product> {
-    await this.findOne(id); // Validamos que exista
+    await this.findOne(id); 
     return this.prisma.product.delete({ where: { id } });
   }
 }

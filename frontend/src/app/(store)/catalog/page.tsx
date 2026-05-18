@@ -4,6 +4,7 @@
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ShoppingCart, Filter } from 'lucide-react';
+import Link from 'next/link';
 import { useProducts } from '@/hooks/useProducts';
 
 export default function CatalogPage() {
@@ -11,12 +12,10 @@ export default function CatalogPage() {
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category');
 
-  // Filtramos los productos si viene una categoría por la URL
   const displayProducts = categoryFilter
     ? products.filter(p => p.category?.slug === categoryFilter)
     : products;
 
-  // Configuraciones de animación de Framer Motion para efecto "cascada"
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
@@ -34,7 +33,6 @@ export default function CatalogPage() {
     <div className="min-h-screen bg-[#121212] pt-8 pb-24">
       <div className="max-w-[1200px] mx-auto px-6">
         
-        {/* Cabecera del Catálogo */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
             <h1 className="text-3xl font-black text-white uppercase tracking-wider mb-2">
@@ -51,7 +49,6 @@ export default function CatalogPage() {
           </button>
         </div>
 
-        {/* Estado de Carga */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5F00]"></div>
@@ -62,7 +59,6 @@ export default function CatalogPage() {
             <p className="text-[#888]">Pronto agregaremos más stock.</p>
           </div>
         ) : (
-          /* Grilla Animada */
           <motion.div 
             variants={containerVariants}
             initial="hidden"
@@ -76,8 +72,7 @@ export default function CatalogPage() {
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
                 className="bg-[#1e1e1e] p-5 rounded-lg text-center flex flex-col group border border-transparent hover:border-[#333] transition-colors shadow-lg"
               >
-                {/* Contenedor de Imagen */}
-                <div className="w-full aspect-[4/5] bg-[#2a2a2a] rounded overflow-hidden mb-4 relative">
+                <Link href={`/product/${product.slug}`} className="block relative w-full aspect-[4/5] bg-[#2a2a2a] rounded overflow-hidden mb-4">
                   {product.images && product.images.length > 0 ? (
                     <img 
                       src={product.images[0]} 
@@ -89,11 +84,10 @@ export default function CatalogPage() {
                       Sin foto
                     </div>
                   )}
-                  {/* Badge de "Nuevo" o "Categoría" */}
                   <div className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-1 uppercase rounded">
                     {product.category?.name || 'SAEL'}
                   </div>
-                </div>
+                </Link>
                 
                 <h3 className="text-[15px] font-bold text-white mb-2 line-clamp-2 min-h-[44px] flex items-center justify-center leading-tight">
                   {product.name}
@@ -103,10 +97,14 @@ export default function CatalogPage() {
                   ${product.price.toLocaleString('es-AR')}
                 </div>
                 
-                <button className="w-full bg-[#333] group-hover:bg-[#FF5F00] text-white font-bold py-3 px-4 rounded uppercase transition-colors duration-300 flex justify-center items-center gap-2 text-sm">
+                {/* Ahora el botón redirige correctamente al detalle del producto */}
+                <Link 
+                  href={`/product/${product.slug}`}
+                  className="w-full bg-[#333] group-hover:bg-[#FF5F00] text-white font-bold py-3 px-4 rounded uppercase transition-colors duration-300 flex justify-center items-center gap-2 text-sm"
+                >
                   <ShoppingCart size={18} />
                   Ver Detalle
-                </button>
+                </Link>
               </motion.div>
             ))}
           </motion.div>

@@ -19,6 +19,11 @@ export class ProductsController {
     return this.productsService.findAll();
   }
 
+  @Get('slug/:slug')
+findBySlug(@Param('slug') slug: string): Promise<Product> {
+  return this.productsService.findBySlug(slug);
+}
+
   @Get(':id')
   findOne(@Param('id') id: string): Promise<Product> {
     return this.productsService.findOne(id);
@@ -28,4 +33,6 @@ export class ProductsController {
   remove(@Param('id') id: string): Promise<Product> {
     return this.productsService.remove(id);
   }
+
+
 }
