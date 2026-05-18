@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, ShieldCheck, Truck } from 'lucide-react';
 import { useProduct } from '@/hooks/useProduct';
 import { SizeSelector } from '@/components/public/SizeSelector';
+import { useCartStore } from '@/store/useCartStore';
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -14,6 +15,9 @@ export default function ProductDetailPage() {
   
   const { product, loading, error } = useProduct(slug);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  
+  // Traemos la acción de agregar al carrito desde el store global
+  const addItem = useCartStore((state) => state.addItem);
 
   if (loading) {
     return (
@@ -26,7 +30,7 @@ export default function ProductDetailPage() {
   if (error || !product) {
     return (
       <div className="min-h-screen bg-[#121212] flex justify-center items-center text-white">
-        <h2>Producto no encontrado</h2>
+        <h2 className="text-xl font-bold">Producto no encontrado</h2>
       </div>
     );
   }
@@ -36,15 +40,27 @@ export default function ProductDetailPage() {
       alert('¡Por favor seleccioná un talle primero!');
       return;
     }
-    // En el Día 15 conectaremos esto con Zustand (el Carrito global)
-    alert(`Agregado al carrito: ${product.name} - Talle ${selectedSize}`);
+
+    // Buscamos cuál es el stock máximo para ese talle seleccionado
+    const variant = product.variants.find(v => v.size === selectedSize);
+    const maxStock = variant ? variant.stock : 10;
+
+    // Despachamos al estado global
+    addItem({
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      size: selectedSize,
+      image: product.images?.[0] || '',
+      maxStock: maxStock
+    });
   };
 
   return (
     <div className="min-h-screen bg-[#121212] text-white py-12 px-6">
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
         
-        {/* Columna Izquierda: Galería de Imágenes */}
+        {/* Columna Izquierda: Imagen */}
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -61,7 +77,7 @@ export default function ProductDetailPage() {
           )}
         </motion.div>
 
-        {/* Columna Derecha: Detalles y Compra */}
+        {/* Columna Derecha: Detalles */}
         <motion.div 
           initial={{ opacity: 0, x: 30 }}
           animate={{ opacity: 1, x: 0 }}
@@ -78,10 +94,9 @@ export default function ProductDetailPage() {
           </div>
 
           <p className="text-[#888] mb-8 leading-relaxed">
-            {product.description || 'Versión importada de alta calidad. Tela premium con tecnología de ventilación avanzada, ideal para alto rendimiento.'}
+            {product.description || 'Versión importada de alta calidad. Tela premium con tecnología de ventilación avanzada.'}
           </p>
 
-          {/* Componente Modular de Talles */}
           <SizeSelector 
             variants={product.variants} 
             selectedSize={selectedSize} 
@@ -96,7 +111,6 @@ export default function ProductDetailPage() {
             Agregar al carrito
           </button>
 
-          {/* Beneficios */}
           <div className="grid grid-cols-2 gap-4 border-t border-[#2a2a2a] pt-8">
             <div className="flex items-center gap-3 text-[#888]">
               <Truck className="text-[#FF5F00]" size={24} />

@@ -1,5 +1,6 @@
 // src/app/(store)/layout.tsx
 import { Navbar } from '@/components/public/Navbar';
+import { CartDrawer } from '@/components/public/CartDrawer';
 
 export default function StoreLayout({
   children,
@@ -7,8 +8,9 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#121212] text-white">
       <Navbar />
+      <CartDrawer />
       {children}
     </div>
   );
