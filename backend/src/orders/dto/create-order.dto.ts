@@ -1,5 +1,5 @@
 // src/orders/dto/create-order.dto.ts
-import { IsString, IsEmail, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsInt, Min, IsUUID } from 'class-validator';
+import { IsString, IsEmail, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsInt, Min, IsUUID, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class OrderItemDto {
@@ -32,6 +32,10 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   shippingZip!: string;
+
+  @IsNumber()
+  @IsOptional()
+  shippingCost?: number;
 
   @IsArray()
   @ValidateNested({ each: true })

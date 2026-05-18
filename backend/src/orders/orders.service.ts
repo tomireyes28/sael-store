@@ -1,18 +1,24 @@
+// backend/src/orders/orders.service.ts
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order } from '@prisma/client';
+import { MailService } from '../mail/mail.service'; // 1. Importamos el servicio de correos
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService // 2. Lo inyectamos en el constructor
+  ) {}
 
   async create(createOrderDto: CreateOrderDto): Promise<Order> {
     let totalAmount = 0;
-    // Fix 1: Cambiamos a const
-    const shippingCost = 0; 
     
-    // Fix 2: Tipado explícito para que sepa qué le vamos a pushear
+    // NOTA: Para la Fase 5, acordate de que este shippingCost debería venir del DTO
+    // y no estar en 0 fijo, así te cobra el envío real!
+    const shippingCost = createOrderDto.shippingCost || 0; 
+    
     const orderItemsData: { variantId: string; quantity: number; price: number }[] = [];
 
     for (const item of createOrderDto.items) {
@@ -39,7 +45,6 @@ export class OrdersService {
       });
     }
 
-    // Fix 3: Le aclaramos que puede arrancar en null pero después ser un string
     let appliedCouponId: string | null = null;
     
     if (createOrderDto.couponCode) {
@@ -67,7 +72,8 @@ export class OrdersService {
 
     totalAmount += shippingCost;
 
-    return this.prisma.order.create({
+    // Guardamos la orden en una variable en vez de retornarla directo
+    const order = await this.prisma.order.create({
       data: {
         customerName: createOrderDto.customerName,
         customerEmail: createOrderDto.customerEmail,
@@ -86,6 +92,11 @@ export class OrdersService {
         items: true,
       },
     });
+
+    // 3. Disparamos el correo (No le ponemos await para que no demore la respuesta al cliente)
+   await this.mailService.sendOrderConfirmation(order.customerName, order.totalAmount);
+
+    return order;
   }
 
   findAll() {

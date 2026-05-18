@@ -9,9 +9,11 @@ import { VariantsModule } from './variants/variants.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { OrdersModule } from './orders/orders.module';
 import { ShippingModule } from './shipping/shipping.module';
+import { MailModule } from './mail/mail.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [PrismaModule, AuthModule, CategoriesModule, ProductsModule, VariantsModule, CloudinaryModule, OrdersModule, ShippingModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, AuthModule, CategoriesModule, ProductsModule, VariantsModule, CloudinaryModule, OrdersModule, ShippingModule, MailModule],
   controllers: [AppController],
   providers: [AppService],
 })

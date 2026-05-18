@@ -41,18 +41,24 @@ export default function ProductDetailPage() {
       return;
     }
 
-    // Buscamos cuál es el stock máximo para ese talle seleccionado
+    // 1. Buscamos la variante exacta que hace match con el talle elegido
     const variant = product.variants.find(v => v.size === selectedSize);
-    const maxStock = variant ? variant.stock : 10;
 
-    // Despachamos al estado global
+    // Si por algún motivo no existe en la BD, lo frenamos
+    if (!variant) {
+      alert('Error: No se encontró el stock para este talle.');
+      return;
+    }
+
+    // 2. Despachamos al estado global, asegurándonos de pasar el variantId
     addItem({
+      variantId: variant.id, // <--- ACÁ ESTÁ LA MAGIA QUE FALTABA
       productId: product.id,
       name: product.name,
       price: product.price,
       size: selectedSize,
       image: product.images?.[0] || '',
-      maxStock: maxStock
+      maxStock: variant.stock
     });
   };
 
