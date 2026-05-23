@@ -2,11 +2,11 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useCartStore } from '@/store/useCartStore';
 import { HeroSection } from '@/components/home/HeroSection';
 import { BenefitsBanner } from '@/components/home/BenefitsBanner';
 import { SplitBanners } from '@/components/home/SplitBanners';
 import Link from 'next/link';
+import Image from 'next/image';
 import { SocialGrid } from '@/components/home/SocialGrid';
 import { Newsletter } from '@/components/home/Newsletter';
 
@@ -22,13 +22,11 @@ const categories = [
 
 // Mock de productos (para las camisetas de abajo)
 const products = [
-  { id: '1', name: 'Argentina Titular 2024', detail: 'VERSIÓN JUGADOR - IMPORTADA', price: 45000, img: '/camiseta_placeholder.png' },
-  { id: '2', name: 'Boca Juniors Alternativa 2024', detail: 'CALIDAD NACIONAL', price: 35000, img: '/camiseta_placeholder.png' },
+  { id: '1', name: 'Argentina Titular 2024', detail: 'VERSIÓN JUGADOR - IMPORTADA', price: 45000, img: '/camiseta_placeholder.jpg' },
+  { id: '2', name: 'Boca Juniors Alternativa 2024', detail: 'CALIDAD NACIONAL', price: 35000, img: '/camiseta_placeholder.jpg' },
 ];
 
 export default function HomePage() {
-  const addItem = useCartStore((state) => state.addItem);
-
   return (
     <div className="min-h-screen bg-[#121212]">
       
@@ -38,7 +36,7 @@ export default function HomePage() {
       {/* PUNTO 2: Tira de Beneficios (MODULAR) */}
       <BenefitsBanner />
 
-      <main className="max-w-[1200px] mx-auto py-16 px-6">
+      <main className="max-w-300 mx-auto py-16 px-6">
         
         {/* PUNTO 3: Comprar por Categoría */}
         <section className="mb-20">
@@ -49,8 +47,8 @@ export default function HomePage() {
           
           <div className="flex flex-wrap gap-x-6 gap-y-10 items-start justify-center">
             {categories.map((cat, index) => (
-              <div key={index} className="flex flex-col items-center justify-center w-[120px] group cursor-pointer">
-                <div className="w-[100px] h-[100px] rounded-full border-2 border-[#333] flex items-center justify-center bg-[#1e1e1e] mb-4 text-white font-bold group-hover:border-[#FF5F00] group-hover:scale-105 transition-all shadow-lg group-hover:shadow-[0_0_15px_rgba(255,95,0,0.2)]">
+              <div key={index} className="flex flex-col items-center justify-center w-30 group cursor-pointer">
+                <div className="w-25 h-25 rounded-full border-2 border-[#333] flex items-center justify-center bg-[#1e1e1e] mb-4 text-white font-bold group-hover:border-[#FF5F00] group-hover:scale-105 transition-all shadow-lg group-hover:shadow-[0_0_15px_rgba(255,95,0,0.2)]">
                   {cat.name}
                 </div>
                 <span className="text-gray-400 text-xs font-bold text-center uppercase tracking-tight line-clamp-1">{cat.detail}</span>
@@ -73,12 +71,18 @@ export default function HomePage() {
                 className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-lg hover:shadow-[0_0_30px_rgba(255,95,0,0.15)] transition-all"
               >
                 <Link href={`/product/temp`}>
-                  <div className="aspect-[4/5] bg-black p-4 flex items-center justify-center">
-                    <img src={product.img} alt={product.name} className="max-w-full max-h-full object-contain" />
+                  <div className="relative aspect-4/5 bg-black p-4 flex items-center justify-center">
+                    <Image 
+                      src={product.img} 
+                      alt={product.name} 
+                      fill
+                      className="object-contain p-4" 
+                      sizes="(max-width: 768px) 50vw, 25vw"
+                    />
                   </div>
                 </Link>
                 
-                <div className="p-5 flex flex-col h-[180px]">
+                <div className="p-5 flex flex-col h-45">
                   <p className="text-[#FF5F00] text-[10px] font-black uppercase tracking-widest mb-1">{product.detail}</p>
                   <h3 className="text-white text-base font-bold mb-1 leading-snug line-clamp-2">{product.name}</h3>
                   
@@ -95,10 +99,13 @@ export default function HomePage() {
         <SplitBanners />
 
       </main>
+      
       {/* PUNTO 6: Grilla Social (MODULAR) */}
       <SocialGrid />
+      
       {/* PUNTO 7: Newsletter (MODULAR) */}
       <Newsletter />
+      
     </div>
   );
 }

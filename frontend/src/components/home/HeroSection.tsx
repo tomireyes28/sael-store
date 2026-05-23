@@ -15,7 +15,7 @@ interface HeroSectionProps {
 export function HeroSection({
   title = "VISTIENDO PASIÓN",
   subtitle = "Importaciones Premium. Calidad Jugador garantizada.",
-  backgroundImage = "https://images.unsplash.com/photo-1579952395544-3715f124c151?q=80&w=2000&auto=format&fit=crop", // Imagen de stock de fútbol oscura
+  backgroundImage = "/hero-bg.jpg", // Imagen de stock de fútbol oscura
   ctaText = "Ver Catálogo",
   ctaLink = "/catalog",
 }: HeroSectionProps) {

@@ -3,6 +3,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
 export function SplitBanners() {
@@ -11,22 +12,24 @@ export function SplitBanners() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
         {/* Banner 1: Colección Retro */}
-        <Link href="/catalog?category=retro" className="relative group block h-[300px] md:h-[400px] rounded-xl overflow-hidden">
+        <Link href="/catalog?category=retro" className="relative group block h-75 md:h-100 rounded-xl overflow-hidden">
           {/* Fondo animado */}
           <motion.div 
             className="absolute inset-0 bg-[#1a1a1a]"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <img 
+            <Image 
               src="/banner-retro.jpg" 
               alt="Colección Retro" 
-              className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500" 
+              fill
+              className="object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500"
+              sizes="(max-width: 768px) 100vw, 50vw" 
             />
           </motion.div>
           
           {/* Capa de degrade para legibilidad */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-linear-to-t from-[#121212] via-transparent to-transparent"></div>
 
           {/* Contenido */}
           <div className="absolute inset-0 p-8 flex flex-col justify-end">
@@ -39,21 +42,24 @@ export function SplitBanners() {
         </Link>
 
         {/* Banner 2: Zona de Ofertas */}
-        <Link href="/catalog?sale=true" className="relative group block h-[300px] md:h-[400px] rounded-xl overflow-hidden">
+        <Link href="/catalog?sale=true" className="relative group block h-75 md:h-100 rounded-xl overflow-hidden">
           {/* Fondo animado */}
           <motion.div 
             className="absolute inset-0 bg-[#1a1a1a]"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <img 
+            <Image 
               src="/banner-sale.jpg" 
               alt="Zona de Ofertas" 
-              className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500" 
+              fill
+              className="object-cover opacity-60 group-hover:opacity-40 transition-opacity duration-500"
+              sizes="(max-width: 768px) 100vw, 50vw" 
             />
           </motion.div>
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-transparent to-transparent"></div>
+          {/* Capa de degrade para legibilidad */}
+          <div className="absolute inset-0 bg-linear-to-t from-[#121212] via-transparent to-transparent"></div>
 
           {/* Contenido */}
           <div className="absolute inset-0 p-8 flex flex-col justify-end">

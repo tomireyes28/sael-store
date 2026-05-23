@@ -1,6 +1,7 @@
 // src/app/(store)/layout.tsx
 import { Navbar } from '@/components/public/Navbar';
 import { CartDrawer } from '@/components/public/CartDrawer';
+import { WhatsAppButton } from '@/components/ui/WhatsAppButton';
 
 export default function StoreLayout({
   children,
@@ -12,6 +13,7 @@ export default function StoreLayout({
       <Navbar />
       <CartDrawer />
       {children}
+      <WhatsAppButton />
     </div>
   );
 }
