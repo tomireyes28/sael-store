@@ -2,41 +2,76 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { ShoppingCart, Filter } from 'lucide-react';
 import Link from 'next/link';
-import { useProducts } from '@/hooks/useProducts';
+import Image from 'next/image';
+import { useProducts, Product } from '@/hooks/useProducts';
+
+// 1. DICCIONARIO DE GRUPOS: Enseñamos al frontend cómo agrupar categorías
+const categoryGroups: Record<string, string[]> = {
+  'europeas': [
+    'serie a', 'serie-a', 'ita',
+    'liga española', 'liga-española', 'la liga', 'esp',
+    'premier league', 'premier-league', 'eng',
+    'bundesliga', 'ligue 1'
+  ]
+};
 
 export default function CatalogPage() {
   const { products, loading } = useProducts();
   const searchParams = useSearchParams();
-  const categoryFilter = searchParams.get('category');
+  
+  const categoryFilter = searchParams.get('category') || searchParams.get('cat');
 
+  // 2. LÓGICA DE FILTRADO INTELIGENTE
   const displayProducts = categoryFilter
-    ? products.filter(p => p.category?.slug === categoryFilter)
+    ? products.filter((p: Product) => {
+        const filterLower = categoryFilter.toLowerCase();
+        const catSlug = p.category?.slug?.toLowerCase() || '';
+        const catName = p.category?.name?.toLowerCase() || '';
+        
+        // Si el filtro es un "Grupo" (ej: europeas), buscamos si la categoría está en su lista
+        if (categoryGroups[filterLower]) {
+          return categoryGroups[filterLower].some(
+            (leagueKeyword) => catSlug.includes(leagueKeyword) || catName.includes(leagueKeyword)
+          );
+        }
+
+        // Si es una categoría normal (ej: lpf, retro), busca coincidencia exacta
+        return catSlug === filterLower || catName === filterLower;
+      })
     : products;
 
-  const containerVariants = {
+  // Animaciones Framer Motion
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
+  // Título dinámico para que quede prolijo
+  let pageTitle = 'Todo el Catálogo';
+  if (categoryFilter) {
+    if (categoryFilter.toLowerCase() === 'europeas') {
+      pageTitle = 'Ligas Europeas';
+    } else {
+      pageTitle = `Sección: ${categoryFilter.replace('-', ' ')}`;
+    }
+  }
+
   return (
     <div className="min-h-screen bg-[#121212] pt-8 pb-24">
-      <div className="max-w-[1200px] mx-auto px-6">
+      <div className="max-w-300 mx-auto px-6">
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
           <div>
             <h1 className="text-3xl font-black text-white uppercase tracking-wider mb-2">
-              {categoryFilter ? `Liga: ${categoryFilter.replace('-', ' ')}` : 'Todo el Catálogo'}
+              {pageTitle}
             </h1>
             <p className="text-[#888]">
               {displayProducts.length} {displayProducts.length === 1 ? 'producto encontrado' : 'productos encontrados'}
@@ -56,7 +91,7 @@ export default function CatalogPage() {
         ) : displayProducts.length === 0 ? (
           <div className="text-center py-20 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
             <h3 className="text-xl text-white font-bold mb-2">No hay productos en esta categoría</h3>
-            <p className="text-[#888]">Pronto agregaremos más stock.</p>
+            <p className="text-[#888]">Pronto agregaremos más stock o verificá los filtros.</p>
           </div>
         ) : (
           <motion.div 
@@ -65,31 +100,35 @@ export default function CatalogPage() {
             animate="show"
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
           >
-            {displayProducts.map((product) => (
+            {displayProducts.map((product: Product) => (
               <motion.div 
                 key={product.id}
                 variants={itemVariants}
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
                 className="bg-[#1e1e1e] p-5 rounded-lg text-center flex flex-col group border border-transparent hover:border-[#333] transition-colors shadow-lg"
               >
-                <Link href={`/product/${product.slug}`} className="block relative w-full aspect-[4/5] bg-[#2a2a2a] rounded overflow-hidden mb-4">
+                <Link href={`/product/${product.slug}`} className="block relative w-full aspect-4/5 bg-[#2a2a2a] rounded overflow-hidden mb-4">
                   {product.images && product.images.length > 0 ? (
-                    <img 
+                    <Image 
                       src={product.images[0]} 
                       alt={product.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      sizes="(max-width: 768px) 100vw, 25vw"
                     />
                   ) : (
                     <div className="flex items-center justify-center w-full h-full text-[#555] text-sm">
                       Sin foto
                     </div>
                   )}
-                  <div className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-1 uppercase rounded">
-                    {product.category?.name || 'SAEL'}
-                  </div>
+                  {product.category && (
+                    <div className="absolute top-2 left-2 bg-[#FF5F00] text-white text-[10px] font-black px-2 py-1 uppercase rounded z-10">
+                      {product.category.name}
+                    </div>
+                  )}
                 </Link>
                 
-                <h3 className="text-[15px] font-bold text-white mb-2 line-clamp-2 min-h-[44px] flex items-center justify-center leading-tight">
+                <h3 className="text-[15px] font-bold text-white mb-2 line-clamp-2 min-h-11 flex items-center justify-center leading-tight">
                   {product.name}
                 </h3>
                 
@@ -97,7 +136,6 @@ export default function CatalogPage() {
                   ${product.price.toLocaleString('es-AR')}
                 </div>
                 
-                {/* Ahora el botón redirige correctamente al detalle del producto */}
                 <Link 
                   href={`/product/${product.slug}`}
                   className="w-full bg-[#333] group-hover:bg-[#FF5F00] text-white font-bold py-3 px-4 rounded uppercase transition-colors duration-300 flex justify-center items-center gap-2 text-sm"

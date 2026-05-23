@@ -4,7 +4,7 @@
 export function Newsletter() {
   return (
     <section className="bg-[#FF5F00] py-16 px-6 mt-10">
-      <div className="max-w-[800px] mx-auto text-center">
+      <div className="max-w-200 mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-black text-white uppercase mb-4 leading-tight">
           Unite al equipo titular
         </h2>
@@ -14,7 +14,7 @@ export function Newsletter() {
         
         <form 
           onSubmit={(e) => e.preventDefault()} 
-          className="flex flex-col md:flex-row gap-3 justify-center max-w-[500px] mx-auto"
+          className="flex flex-col md:flex-row gap-3 justify-center max-w-125 mx-auto"
         >
           <input 
             type="email" 

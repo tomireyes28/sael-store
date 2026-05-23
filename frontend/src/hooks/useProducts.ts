@@ -1,13 +1,19 @@
+// src/hooks/useProducts.ts
 import { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 
+// Interfaz estrictamente tipada (reflejando tu esquema de Prisma)
 export interface Product {
   id: string;
   name: string;
+  slug: string; 
   price: number;
   images: string[];
-  category: { name: string };
-  variants: { stock: number }[];
+  category?: { 
+    name: string;
+    slug: string; 
+  };
+  variants?: { stock: number }[];
 }
 
 export function useProducts() {

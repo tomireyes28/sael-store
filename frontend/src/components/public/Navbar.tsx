@@ -28,7 +28,7 @@ export function Navbar() {
       </div>
 
       {/* 2. Navbar Principal */}
-      <div className="px-6 py-4 flex justify-between items-center max-w-[1400px] mx-auto gap-4">
+      <div className="px-6 py-4 flex justify-between items-center max-w-350 mx-auto gap-4">
         
         {/* Menú Hamburguesa (Mobile) */}
         <button 
@@ -108,7 +108,7 @@ export function Navbar() {
 
       {/* Menú Desplegable (Mobile) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-[100%] left-0 w-full h-screen bg-[#121212] flex flex-col p-6 z-50">
+        <div className="md:hidden absolute top-full left-0 w-full h-screen bg-[#121212] flex flex-col p-6 z-50">
           <Link href="/catalog?cat=lpf" className="py-4 font-bold text-lg text-white uppercase border-b border-[#2a2a2a]">Liga Argentina</Link>
           <Link href="/catalog?cat=europeas" className="py-4 font-bold text-lg text-white uppercase border-b border-[#2a2a2a]">Ligas Europeas</Link>
           <Link href="/catalog?cat=selecciones" className="py-4 font-bold text-lg text-white uppercase border-b border-[#2a2a2a]">Selecciones</Link>
