@@ -1,13 +1,29 @@
 // src/app/admin/products/page.tsx
 'use client';
 
+import { useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductTable } from '@/components/admin/ProductTable';
 
 export default function ProductsPage() {
-  const { products, loading } = useProducts();
+  // Ahora traemos la función deleteProduct directo de nuestro Hook
+  const { products, loading, deleteProduct } = useProducts();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // La función es súper limpia, no sabe qué es un token ni qué es un fetch
+  const handleDelete = async (id: string) => {
+    const success = await deleteProduct(id);
+    if (!success) {
+      alert('Hubo un error al eliminar el producto.');
+    }
+  };
+
+  const filteredProducts = products.filter(product => 
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-8">
@@ -30,15 +46,20 @@ export default function ProductsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
           <input
             type="text"
-            placeholder="Buscar por nombre, liga o equipo..."
+            placeholder="Buscar por nombre, liga o categoría..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-950 border border-gray-800 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
           />
         </div>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-        {/* Le pasamos los datos al componente hijo */}
-        <ProductTable products={products} loading={loading} />
+        <ProductTable 
+          products={filteredProducts} 
+          loading={loading} 
+          onDelete={handleDelete} 
+        />
       </div>
     </div>
   );

@@ -1,19 +1,70 @@
-// src/app/admin/products/new/page.tsx
+// src/app/admin/products/[id]/page.tsx
 'use client';
 
 import Link from 'next/link';
-import { useRef } from 'react'; 
-import { ArrowLeft, Upload, Plus, Trash2, Save } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react'; 
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Upload, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { useProductForm } from '@/hooks/useProductForm';
+import Cookies from 'js-cookie';
 
-export default function NewProductPage() {
+export default function EditProductPage() {
+  const params = useParams();
+  const router = useRouter();
+  const productId = params.id as string;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [isFetchingInitialData, setIsFetchingInitialData] = useState(true);
+
   const {
     loading, imageFile, formData, setFormData, variants,
     handleAddVariant, handleRemoveVariant, updateVariant,
-    handleImageChange, submitForm
+    handleImageChange, submitForm, loadProductData
   } = useProductForm();
+
+  useEffect(() => {
+    const fetchProductInfo = async () => {
+      try {
+        const token = Cookies.get('sael_admin_token');
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        
+        const res = await fetch(`${apiUrl}/products/${productId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          const productData = await res.json();
+          loadProductData(productData);
+        } else {
+          alert('No se pudo cargar el producto');
+          router.push('/admin/products');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      } finally {
+        setIsFetchingInitialData(false);
+      }
+    };
+
+    if (productId) {
+      fetchProductInfo();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    await submitForm(e, productId);
+  };
+
+  if (isFetchingInitialData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-gray-400">
+        <Loader2 className="animate-spin mb-4" size={48} />
+        <p>Cargando información del producto...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -22,12 +73,12 @@ export default function NewProductPage() {
           <ArrowLeft size={24} />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-white">Nuevo Producto</h1>
-          <p className="text-gray-400">Completá los datos para cargar una nueva camiseta.</p>
+          <h1 className="text-3xl font-bold text-white">Editar Producto</h1>
+          <p className="text-gray-400">Modificá los datos o el stock de esta camiseta.</p>
         </div>
       </div>
 
-      <form onSubmit={submitForm} className="space-y-8">
+      <form onSubmit={handleEditSubmit} className="space-y-8">
         {/* Bloque 1: Datos Generales */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
           <h2 className="text-xl font-semibold text-white mb-4">Datos Generales</h2>
@@ -50,7 +101,6 @@ export default function NewProductPage() {
             <Input 
               label="ID Categoría (Liga)" 
               type="text" 
-              placeholder="Ej: dcf123-..." 
               required 
               value={formData.categoryId} 
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} 
@@ -69,7 +119,7 @@ export default function NewProductPage() {
 
         {/* Bloque 2: Foto */}
         <div className="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <h2 className="text-xl font-semibold text-white mb-4">Imagen del Producto</h2>
+          <h2 className="text-xl font-semibold text-white mb-4">Actualizar Imagen</h2>
           <div 
             onClick={() => fileInputRef.current?.click()}
             className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:bg-gray-800/50 transition-colors cursor-pointer"
@@ -79,11 +129,11 @@ export default function NewProductPage() {
               {imageFile ? (
                 <span className="text-green-500 font-semibold">Archivo seleccionado: {imageFile.name}</span>
               ) : (
-                <><span className="text-blue-500 font-semibold">Hacé clic para subir</span> o arrastrá un archivo JPG.</>
+                <><span className="text-blue-500 font-semibold">Hacé clic</span> para reemplazar la foto (Opcional).</>
               )}
             </p>
             <input 
-              type="file" ref={fileInputRef} onChange={handleImageChange} accept=".jpg, .jpeg" className="hidden" 
+              type="file" ref={fileInputRef} onChange={handleImageChange} accept=".jpg, .jpeg, .png" className="hidden" 
             />
           </div>
         </div>
@@ -113,7 +163,7 @@ export default function NewProductPage() {
                 </div>
                 <div className="flex-1">
                   <Input 
-                    label="Stock Inicial" 
+                    label="Stock" 
                     type="number" 
                     required 
                     min="0" 
@@ -139,7 +189,7 @@ export default function NewProductPage() {
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors shadow-lg shadow-blue-500/20 disabled:opacity-50"
           >
             <Save size={20} />
-            {loading ? 'Guardando...' : 'Crear Producto'}
+            {loading ? 'Guardando...' : 'Actualizar Producto'}
           </button>
         </div>
       </form>
