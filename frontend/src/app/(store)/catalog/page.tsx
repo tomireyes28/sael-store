@@ -3,19 +3,22 @@
 
 import { useSearchParams } from 'next/navigation';
 import { motion, Variants } from 'framer-motion';
-import { ShoppingCart, Filter } from 'lucide-react';
+import { ShoppingCart, Filter, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useProducts, Product } from '@/hooks/useProducts';
 
-// 1. DICCIONARIO DE GRUPOS: Enseñamos al frontend cómo agrupar categorías
+// DICCIONARIO DE GRUPOS AMPLIADO
 const categoryGroups: Record<string, string[]> = {
   'europeas': [
     'serie a', 'serie-a', 'ita',
     'liga española', 'liga-española', 'la liga', 'esp',
     'premier league', 'premier-league', 'eng',
     'bundesliga', 'ligue 1'
-  ]
+  ],
+  'lpf': ['liga argentina', 'liga-argentina', 'lpf', 'argentina'],
+  'selecciones': ['selecciones', 'nacional', 'nacionales', 'afa'],
+  'retro': ['retro', 'coleccion retro', 'colección retro', 'vintage']
 };
 
 export default function CatalogPage() {
@@ -23,27 +26,36 @@ export default function CatalogPage() {
   const searchParams = useSearchParams();
   
   const categoryFilter = searchParams.get('category') || searchParams.get('cat');
+  const searchQuery = searchParams.get('q'); // <-- Leemos el texto del buscador
 
-  // 2. LÓGICA DE FILTRADO INTELIGENTE
-  const displayProducts = categoryFilter
-    ? products.filter((p: Product) => {
-        const filterLower = categoryFilter.toLowerCase();
-        const catSlug = p.category?.slug?.toLowerCase() || '';
-        const catName = p.category?.name?.toLowerCase() || '';
-        
-        // Si el filtro es un "Grupo" (ej: europeas), buscamos si la categoría está en su lista
-        if (categoryGroups[filterLower]) {
-          return categoryGroups[filterLower].some(
-            (leagueKeyword) => catSlug.includes(leagueKeyword) || catName.includes(leagueKeyword)
-          );
-        }
+  // LÓGICA DE FILTRADO MAESTRA (Filtra por Buscador o por Categoría)
+  const displayProducts = products.filter((p: Product) => {
+    // 1. Si el usuario usó la barra de búsqueda superior
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchName = p.name.toLowerCase().includes(query);
+      const matchCat = p.category?.name?.toLowerCase().includes(query);
+      return matchName || matchCat;
+    }
 
-        // Si es una categoría normal (ej: lpf, retro), busca coincidencia exacta
-        return catSlug === filterLower || catName === filterLower;
-      })
-    : products;
+    // 2. Si el usuario hizo clic en una categoría
+    if (categoryFilter) {
+      const filterLower = categoryFilter.toLowerCase();
+      const catSlug = p.category?.slug?.toLowerCase() || '';
+      const catName = p.category?.name?.toLowerCase() || '';
+      
+      if (categoryGroups[filterLower]) {
+        return categoryGroups[filterLower].some(
+          (keyword) => catSlug.includes(keyword) || catName.includes(keyword)
+        );
+      }
+      return catSlug === filterLower || catName === filterLower;
+    }
 
-  // Animaciones Framer Motion
+    // 3. Si no hay filtros, muestra todo
+    return true;
+  });
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.1 } }
@@ -54,11 +66,15 @@ export default function CatalogPage() {
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
   };
 
-  // Título dinámico para que quede prolijo
+  // Título dinámico
   let pageTitle = 'Todo el Catálogo';
-  if (categoryFilter) {
+  if (searchQuery) {
+    pageTitle = `Resultados para "${searchQuery}"`;
+  } else if (categoryFilter) {
     if (categoryFilter.toLowerCase() === 'europeas') {
       pageTitle = 'Ligas Europeas';
+    } else if (categoryFilter.toLowerCase() === 'lpf') {
+      pageTitle = 'Liga Argentina';
     } else {
       pageTitle = `Sección: ${categoryFilter.replace('-', ' ')}`;
     }
@@ -89,9 +105,13 @@ export default function CatalogPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5F00]"></div>
           </div>
         ) : displayProducts.length === 0 ? (
-          <div className="text-center py-20 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a]">
-            <h3 className="text-xl text-white font-bold mb-2">No hay productos en esta categoría</h3>
-            <p className="text-[#888]">Pronto agregaremos más stock o verificá los filtros.</p>
+          <div className="text-center py-20 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] flex flex-col items-center">
+            <SearchX size={48} className="text-gray-600 mb-4" />
+            <h3 className="text-xl text-white font-bold mb-2">No encontramos resultados</h3>
+            <p className="text-[#888]">Probá buscando con otras palabras o navegando por las categorías.</p>
+            <Link href="/catalog" className="mt-6 text-[#FF5F00] font-bold hover:underline uppercase text-sm">
+              Volver al catálogo completo
+            </Link>
           </div>
         ) : (
           <motion.div 
