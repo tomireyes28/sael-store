@@ -1,13 +1,19 @@
 // src/hooks/useProductForm.ts
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 
-// 1. INTERFACES ESTRICTAS
 export interface Variant {
   id?: string;
   size: string;
   stock: number;
+}
+
+// 1. NUEVA INTERFAZ PARA LAS CATEGORÍAS
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 export interface ProductResponse {
@@ -28,11 +34,13 @@ export interface ProductPayload {
   images?: string[];
 }
 
-// 2. HOOK
 export function useProductForm() {
   const router = useRouter();
   const [loading, setLoading] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  
+  // 2. ESTADO PARA GUARDAR LAS CATEGORÍAS
+  const [categories, setCategories] = useState<Category[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,7 +51,25 @@ export function useProductForm() {
 
   const [variants, setVariants] = useState<Variant[]>([{ size: 'M', stock: 10 }]);
 
-  // === FUNCIONES DE VARIANTES ===
+  // 3. BUSCAR LAS CATEGORÍAS AL CARGAR EL HOOK
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+        // La ruta pública de categorías no suele requerir token, pero podés agregarlo si tu API lo pide
+        const res = await fetch(`${apiUrl}/categories`);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(data);
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const handleAddVariant = () => setVariants([...variants, { size: '', stock: 0 }]);
   const handleRemoveVariant = (index: number) => setVariants(variants.filter((_, i) => i !== index));
   
@@ -53,14 +79,12 @@ export function useProductForm() {
     setVariants(newVariants);
   };
 
-  // === MANEJO DE IMAGEN ===
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setImageFile(e.target.files[0]);
     }
   };
 
-  // === PRECARGA DE DATOS (PARA EDICIÓN) ===
   const loadProductData = (product: ProductResponse) => {
     setFormData({
       name: product.name || '',
@@ -78,12 +102,16 @@ export function useProductForm() {
     }
   };
 
-  // === ENVÍO DEL FORMULARIO (CREAR O EDITAR) ===
   const submitForm = async (e: React.FormEvent, productId?: string) => {
     e.preventDefault();
     
     if (!productId && !imageFile) {
       alert('Por favor, seleccioná una imagen para el producto.');
+      return;
+    }
+
+    if (!formData.categoryId) {
+      alert('Por favor, seleccioná una categoría (Liga).');
       return;
     }
     
@@ -94,7 +122,6 @@ export function useProductForm() {
     try {
       let imageUrl: string | undefined = undefined;
 
-      // 1. Subir imagen SOLO si hay archivo nuevo
       if (imageFile) {
         const imageFormData = new FormData();
         imageFormData.append('file', imageFile);
@@ -110,7 +137,6 @@ export function useProductForm() {
         imageUrl = imageData.url; 
       }
 
-      // 2. Preparar payload tipado
       const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
       const productPayload: ProductPayload = {
@@ -125,7 +151,6 @@ export function useProductForm() {
         productPayload.images = [imageUrl];
       }
 
-      // 3. Crear o Actualizar Producto
       const url = productId ? `${apiUrl}/products/${productId}` : `${apiUrl}/products`;
       const method = productId ? 'PATCH' : 'POST';
 
@@ -143,7 +168,6 @@ export function useProductForm() {
       const productData: ProductResponse = await productRes.json();
       const finalProductId = productId || productData.id;
 
-      // 4. Guardar o Actualizar Variantes
       await Promise.all(variants.map(variant => {
         if (variant.id && productId) {
           return fetch(`${apiUrl}/variants/${variant.id}`, {
@@ -191,6 +215,7 @@ export function useProductForm() {
     formData,
     setFormData,
     variants,
+    categories, // 4. EXPORTAMOS LAS CATEGORÍAS AL FRONTEND
     handleAddVariant,
     handleRemoveVariant,
     updateVariant,

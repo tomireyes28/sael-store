@@ -10,7 +10,7 @@ import { useProductForm } from '@/hooks/useProductForm';
 export default function NewProductPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
-    loading, imageFile, formData, setFormData, variants,
+    loading, imageFile, formData, setFormData, variants, categories,
     handleAddVariant, handleRemoveVariant, updateVariant,
     handleImageChange, submitForm
   } = useProductForm();
@@ -47,14 +47,31 @@ export default function NewProductPage() {
               value={formData.price} 
               onChange={(e) => setFormData({ ...formData, price: e.target.value })} 
             />
-            <Input 
-              label="ID Categoría (Liga)" 
-              type="text" 
-              placeholder="Ej: dcf123-..." 
-              required 
-              value={formData.categoryId} 
-              onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} 
-            />
+           {/* SELECTOR DE CATEGORÍA MODERNO */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-gray-300">
+                Categoría (Liga) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <select 
+                  required 
+                  value={formData.categoryId} 
+                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })} 
+                  className="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all appearance-none"
+                >
+                  <option value="" disabled>Seleccioná una liga...</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {/* Flechita personalizada para el select */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+              </div>
+            </div>
             <div className="md:col-span-2">
               <Input 
                 label="Descripción" 
