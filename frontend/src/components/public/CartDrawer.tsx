@@ -25,7 +25,7 @@ export function CartDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={toggleCart}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-60"
           />
 
           {/* Panel Lateral */}
@@ -34,7 +34,7 @@ export function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full md:w-[400px] bg-[#121212] border-l border-[#2a2a2a] z-[70] flex flex-col shadow-2xl"
+            className="fixed top-0 right-0 h-full w-full md:w-100 bg-[#121212] border-l border-[#2a2a2a] z-70 flex flex-col shadow-2xl"
           >
             {/* Cabecera del Carrito */}
             <div className="flex justify-between items-center p-6 border-b border-[#2a2a2a]">
@@ -57,7 +57,7 @@ export function CartDrawer() {
                 <div className="space-y-6">
                   {items.map((item) => (
                     <div key={item.id} className="flex gap-4">
-                      <div className="w-20 h-24 bg-[#1e1e1e] rounded overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-24 bg-[#1e1e1e] rounded overflow-hidden shrink-0">
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1 flex flex-col justify-between">

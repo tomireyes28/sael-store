@@ -10,14 +10,14 @@ import Image from 'next/image';
 import { SocialGrid } from '@/components/home/SocialGrid';
 import { Newsletter } from '@/components/home/Newsletter';
 
-// Mock de categorías (para los circulitos)
+// Mock de categorías actualizado con logos y slugs
 const categories = [
-  { name: 'AFA', detail: 'SELECCIONES' },
-  { name: 'LPF', detail: 'LIGA ARGENTINA' },
-  { name: 'ENG', detail: 'PREMIER LEAGUE' },
-  { name: 'ESP', detail: 'LIGA ESPAÑOLA' },
-  { name: 'ITA', detail: 'SERIE A' },
-  { name: 'BRA', detail: 'BRASILEIRAO' },
+  { name: 'AFA', detail: 'SELECCIONES', logo: '/logos/afa.png', slug: 'selecciones' },
+  { name: 'LPF', detail: 'LIGA ARGENTINA', logo: '/logos/lpf.png', slug: 'lpf' },
+  { name: 'ENG', detail: 'PREMIER LEAGUE', logo: '/logos/premier.png', slug: 'europeas' },
+  { name: 'ESP', detail: 'LIGA ESPAÑOLA', logo: '/logos/laliga.png', slug: 'europeas' },
+  { name: 'ITA', detail: 'SERIE A', logo: '/logos/seriea.png', slug: 'europeas' },
+  { name: 'BRA', detail: 'BRASILEIRAO', logo: '/logos/brasileirao.png', slug: 'brasileirao' },
 ];
 
 // Mock de productos (para las camisetas de abajo)
@@ -47,12 +47,18 @@ export default function HomePage() {
           
           <div className="flex flex-wrap gap-x-6 gap-y-10 items-start justify-center">
             {categories.map((cat, index) => (
-              <div key={index} className="flex flex-col items-center justify-center w-30 group cursor-pointer">
-                <div className="w-25 h-25 rounded-full border-2 border-[#333] flex items-center justify-center bg-[#1e1e1e] mb-4 text-white font-bold group-hover:border-[#FF5F00] group-hover:scale-105 transition-all shadow-lg group-hover:shadow-[0_0_15px_rgba(255,95,0,0.2)]">
-                  {cat.name}
+              <Link href={`/catalog?cat=${cat.slug}`} key={index} className="flex flex-col items-center justify-center w-30 group cursor-pointer">
+                <div className="relative w-25 h-25 rounded-full border-2 border-[#333] flex items-center justify-center bg-[#1e1e1e] mb-4 group-hover:border-[#FF5F00] group-hover:scale-105 transition-all shadow-lg group-hover:shadow-[0_0_15px_rgba(255,95,0,0.2)] overflow-hidden">
+                  <Image 
+                    src={cat.logo} 
+                    alt={cat.name} 
+                    fill
+                    className="object-contain p-5 group-hover:scale-110 transition-transform duration-300"
+                    sizes="100px"
+                  />
                 </div>
                 <span className="text-gray-400 text-xs font-bold text-center uppercase tracking-tight line-clamp-1">{cat.detail}</span>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -76,7 +82,7 @@ export default function HomePage() {
                       src={product.img} 
                       alt={product.name} 
                       fill
-                      className="object-contain p-4" 
+                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
                       sizes="(max-width: 768px) 50vw, 25vw"
                     />
                   </div>
