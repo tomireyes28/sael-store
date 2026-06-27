@@ -7,6 +7,7 @@ import { ShoppingCart, Filter, SearchX } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useProducts, Product } from '@/hooks/useProducts';
+import { Suspense } from 'react';
 
 // DICCIONARIO DE GRUPOS AMPLIADO
 const categoryGroups: Record<string, string[]> = {
@@ -21,16 +22,16 @@ const categoryGroups: Record<string, string[]> = {
   'retro': ['retro', 'coleccion retro', 'colección retro', 'vintage']
 };
 
-export default function CatalogPage() {
+// 1. Convertimos tu componente principal en uno interno (sin el export default)
+function CatalogContent() {
   const { products, loading } = useProducts();
   const searchParams = useSearchParams();
   
   const categoryFilter = searchParams.get('category') || searchParams.get('cat');
-  const searchQuery = searchParams.get('q'); // <-- Leemos el texto del buscador
+  const searchQuery = searchParams.get('q');
 
-  // LÓGICA DE FILTRADO MAESTRA (Filtra por Buscador o por Categoría)
+  // LÓGICA DE FILTRADO MAESTRA
   const displayProducts = products.filter((p: Product) => {
-    // 1. Si el usuario usó la barra de búsqueda superior
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchName = p.name.toLowerCase().includes(query);
@@ -38,7 +39,6 @@ export default function CatalogPage() {
       return matchName || matchCat;
     }
 
-    // 2. Si el usuario hizo clic en una categoría
     if (categoryFilter) {
       const filterLower = categoryFilter.toLowerCase();
       const catSlug = p.category?.slug?.toLowerCase() || '';
@@ -52,7 +52,6 @@ export default function CatalogPage() {
       return catSlug === filterLower || catName === filterLower;
     }
 
-    // 3. Si no hay filtros, muestra todo
     return true;
   });
 
@@ -169,5 +168,18 @@ export default function CatalogPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// 2. Exportamos el componente principal envolviendo todo en Suspense
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#121212] flex justify-center items-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF5F00]"></div>
+      </div>
+    }>
+      <CatalogContent />
+    </Suspense>
   );
 }
