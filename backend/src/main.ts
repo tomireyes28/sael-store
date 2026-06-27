@@ -5,12 +5,17 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Agregamos esta línea para darle permiso al frontend (puerto 3001) de pegarle al backend
   app.enableCors({
-    origin: 'http://localhost:3001', // O podés poner '*' para permitir todo por ahora
+    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
     credentials: true,
   });
 
-  await app.listen(3000);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  
+  console.log(`🚀 Backend corriendo en el puerto ${port}`);
 }
-bootstrap();
+
+bootstrap().catch((err) => {
+  console.error('❌ Error fatal al arrancar la aplicación:', err);
+});
