@@ -17,10 +17,10 @@ export function OrderSummary({ items, shippingCost, shippingName }: OrderSummary
     <div className="bg-[#1e1e1e] p-6 rounded-lg border border-[#2a2a2a] sticky top-24">
       <h2 className="text-xl font-black uppercase mb-6">Resumen de Compra</h2>
       
-      <div className="space-y-4 mb-6 max-h-[400px] overflow-y-auto pr-2">
+      <div className="space-y-4 mb-6 max-h-100 overflow-y-auto pr-2">
         {items.map((item) => (
           <div key={item.id} className="flex gap-4 items-center">
-            <div className="w-16 h-20 bg-[#121212] rounded overflow-hidden flex-shrink-0 border border-[#333]">
+            <div className="w-16 h-20 bg-[#121212] rounded overflow-hidden shrink-0 border border-[#333]">
               <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1">

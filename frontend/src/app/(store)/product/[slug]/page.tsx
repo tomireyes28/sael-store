@@ -8,6 +8,24 @@ import { ShoppingCart, ShieldCheck, Truck } from 'lucide-react';
 import { useProduct } from '@/hooks/useProduct';
 import { SizeSelector } from '@/components/public/SizeSelector';
 import { useCartStore } from '@/store/useCartStore';
+import Image from 'next/image';
+
+// 1. Definimos interfaces estrictas para este componente
+interface ProductVariant {
+  id: string;
+  size: string;
+  stock: number;
+}
+
+interface DetailProduct {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  category?: { name: string };
+  images?: string[];
+  variants?: ProductVariant[];
+}
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -16,7 +34,6 @@ export default function ProductDetailPage() {
   const { product, loading, error } = useProduct(slug);
   const [selectedSize, setSelectedSize] = useState<string>('');
   
-  // Traemos la acción de agregar al carrito desde el store global
   const addItem = useCartStore((state) => state.addItem);
 
   if (loading) {
@@ -35,51 +52,58 @@ export default function ProductDetailPage() {
     );
   }
 
+  // 2. Casteamos el producto genérico a nuestra interfaz estricta
+  const detailProduct = product as unknown as DetailProduct;
+
   const handleAddToCart = () => {
     if (!selectedSize) {
       alert('¡Por favor seleccioná un talle primero!');
       return;
     }
 
-    // 1. Buscamos la variante exacta que hace match con el talle elegido
-    const variant = product.variants.find(v => v.size === selectedSize);
+    // 3. Optional Chaining (?.) para prevenir el error de undefined
+    const variant = detailProduct.variants?.find(v => v.size === selectedSize);
 
-    // Si por algún motivo no existe en la BD, lo frenamos
     if (!variant) {
       alert('Error: No se encontró el stock para este talle.');
       return;
     }
 
-    // 2. Despachamos al estado global, asegurándonos de pasar el variantId
     addItem({
-      variantId: variant.id, // <--- ACÁ ESTÁ LA MAGIA QUE FALTABA
-      productId: product.id,
-      name: product.name,
-      price: product.price,
+      variantId: variant.id,
+      productId: detailProduct.id,
+      name: detailProduct.name,
+      price: detailProduct.price,
       size: selectedSize,
-      image: product.images?.[0] || '',
+      image: detailProduct.images?.[0] || '',
       maxStock: variant.stock
     });
   };
 
   return (
     <div className="min-h-screen bg-[#121212] text-white py-12 px-6">
-      <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+      {/* 4. Corregimos el warning de Tailwind (max-w-[1200px] -> max-w-300) */}
+      <div className="max-w-300 mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
         
         {/* Columna Izquierda: Imagen */}
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          className="bg-[#1e1e1e] rounded-xl p-8 flex items-center justify-center border border-[#2a2a2a] aspect-[4/5]"
+          // 5. Corregimos aspect-[4/5] -> aspect-4/5 y agregamos relative/overflow-hidden para el Image de Next.js
+          className="bg-[#1e1e1e] rounded-xl flex items-center justify-center border border-[#2a2a2a] aspect-4/5 relative overflow-hidden shadow-2xl"
         >
-          {product.images && product.images.length > 0 ? (
-             <img 
-               src={product.images[0]} 
-               alt={product.name} 
-               className="w-full h-full object-cover rounded-lg shadow-2xl"
-             />
+          {detailProduct.images && detailProduct.images.length > 0 ? (
+            // 6. Implementamos next/image optimizado con fill
+            <Image 
+              src={detailProduct.images[0]} 
+              alt={detailProduct.name} 
+              fill
+              priority // Le dice a Next.js que cargue esta imagen rápido porque es principal (LCP)
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
           ) : (
-             <span className="text-[#555]">Sin imagen</span>
+            <span className="text-[#555]">Sin imagen</span>
           )}
         </motion.div>
 
@@ -90,21 +114,22 @@ export default function ProductDetailPage() {
           className="flex flex-col justify-center"
         >
           <div className="mb-2 text-[#FF5F00] font-black text-sm uppercase tracking-widest">
-            {product.category?.name}
+            {detailProduct.category?.name}
           </div>
           <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
-            {product.name}
+            {detailProduct.name}
           </h1>
           <div className="text-3xl font-black mb-8 text-[#ccc]">
-            ${product.price.toLocaleString('es-AR')}
+            ${detailProduct.price.toLocaleString('es-AR')}
           </div>
 
           <p className="text-[#888] mb-8 leading-relaxed">
-            {product.description || 'Versión importada de alta calidad. Tela premium con tecnología de ventilación avanzada.'}
+            {detailProduct.description || 'Versión importada de alta calidad. Tela premium con tecnología de ventilación avanzada.'}
           </p>
 
           <SizeSelector 
-            variants={product.variants} 
+            // 7. Usamos el Nullish Coalescing (?? []) para asegurar que siempre pasamos un array
+            variants={detailProduct.variants ?? []} 
             selectedSize={selectedSize} 
             onSelectSize={setSelectedSize} 
           />

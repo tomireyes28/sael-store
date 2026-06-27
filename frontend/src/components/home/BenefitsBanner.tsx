@@ -23,7 +23,7 @@ export function BenefitsBanner() {
   return (
     // Responsivo: grid de 1 columna en celu, 3 en compu
     <section className="bg-[#1a1a1a] border-y border-[#2a2a2a] py-8 px-6">
-      <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-300 mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
         {benefits.map((benefit, index) => {
           const Icon = benefit.icon;
           return (

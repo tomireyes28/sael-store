@@ -60,7 +60,7 @@ export default function CheckoutPage() {
   // Layout Principal
   return (
     <div className="min-h-screen bg-[#121212] text-white py-10 px-6">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-300 mx-auto">
         <Link href="/catalog" className="inline-flex items-center gap-2 text-[#888] hover:text-[#FF5F00] transition-colors font-bold uppercase text-sm mb-8">
           <ArrowLeft size={18} /> Volver a la tienda
         </Link>

@@ -3,14 +3,31 @@
 
 import { AlertTriangle, PackageSearch } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
+import Image from 'next/image';
+
+// 1. Definimos las interfaces estrictas para Tipar todo correctamente
+interface ProductVariant {
+  size: string;
+  stock: number;
+}
+
+interface InventoryProduct {
+  id: string;
+  name: string;
+  category?: { name: string };
+  images?: string[];
+  variants?: ProductVariant[];
+}
 
 export default function InventoryPage() {
   const { products, loading } = useProducts();
 
-  // Filtramos para sacar una lista plana de "Alertas de Stock"
-  // Buscamos todas las variantes de todos los productos que tengan stock <= 5
-  const lowStockAlerts = products.flatMap(product => 
-    product.variants
+  // 2. Le indicamos a TypeScript que estos productos cumplen con nuestra interfaz estricta
+  const inventoryProducts = products as InventoryProduct[];
+
+  // 3. Usamos ?? [] para manejar posibles undefined sin romper el tipado
+  const lowStockAlerts = inventoryProducts.flatMap(product => 
+    (product.variants ?? [])
       .filter(variant => variant.stock <= 5)
       .map(variant => ({
         productId: product.id,
@@ -76,7 +93,14 @@ export default function InventoryPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       {alert.image ? (
-                        <img src={alert.image} alt={alert.productName} className="w-10 h-10 rounded object-cover bg-gray-800 border border-gray-700" />
+                        // 4. Implementamos el componente Image de Next.js correctamente
+                        <Image 
+                          src={alert.image} 
+                          alt={alert.productName} 
+                          width={40}
+                          height={40}
+                          className="rounded object-cover bg-gray-800 border border-gray-700" 
+                        />
                       ) : (
                         <div className="w-10 h-10 rounded bg-gray-800 border border-gray-700" />
                       )}
