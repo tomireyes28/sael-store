@@ -3,7 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
 
-const dbUrl = "postgresql://sael_user:sael_password@localhost:5444/sael_db?schema=public";
+const dbUrl = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString: dbUrl });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -42,10 +42,10 @@ async function main() {
   console.log('✅ Categorías creadas.');
 
   // Imágenes genéricas de alta calidad de Unsplash para indumentaria/fútbol
-  const imgFutbol = ['https://images.unsplash.com/photo-1589487391730-58f20eb2c308?auto=format&fit=crop&q=80&w=800'];
-  const imgRopa1 = ['https://images.unsplash.com/photo-1614632537190-23e4146777db?auto=format&fit=crop&q=80&w=800'];
-  const imgRopa2 = ['https://images.unsplash.com/photo-1578587018452-892bace94f12?auto=format&fit=crop&q=80&w=800'];
-  const imgRetro = ['https://images.unsplash.com/photo-1550985223-9366eec6a9bf?auto=format&fit=crop&q=80&w=800'];
+  const imgFutbol = ['https://images.unsplash.com/photo-1683142032379-a95b8af4fda5?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'];
+  const imgRopa1 = ['https://images.unsplash.com/photo-1683142032379-a95b8af4fda5?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'];
+  const imgRopa2 = ['https://images.unsplash.com/photo-1683142032379-a95b8af4fda5?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'];
+  const imgRetro = ['https://images.unsplash.com/photo-1683142032379-a95b8af4fda5?q=80&w=764&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'];
 
   // 4. Datos de Productos (30 productos)
   const productsData = [
