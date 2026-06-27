@@ -10,7 +10,10 @@ import Image from 'next/image';
 import { SocialGrid } from '@/components/home/SocialGrid';
 import { Newsletter } from '@/components/home/Newsletter';
 
-// Mock de categorías actualizado con logos y slugs
+// Importamos el hook real de nuestra base de datos
+import { useProducts, Product } from '@/hooks/useProducts';
+
+// Las categorías las dejamos hardcodeadas porque apuntan a tus logos locales que armaste a medida
 const categories = [
   { name: 'AFA', detail: 'SELECCIONES', logo: '/logos/afa.png', slug: 'selecciones' },
   { name: 'LPF', detail: 'LIGA ARGENTINA', logo: '/logos/lpf.png', slug: 'lpf' },
@@ -20,20 +23,20 @@ const categories = [
   { name: 'BRA', detail: 'BRASILEIRAO', logo: '/logos/brasileirao.png', slug: 'brasileirao' },
 ];
 
-// Mock de productos (para las camisetas de abajo)
-const products = [
-  { id: '1', name: 'Argentina Titular 2024', detail: 'VERSIÓN JUGADOR - IMPORTADA', price: 45000, img: '/camiseta_placeholder.jpg' },
-  { id: '2', name: 'Boca Juniors Alternativa 2024', detail: 'CALIDAD NACIONAL', price: 35000, img: '/camiseta_placeholder.jpg' },
-];
-
 export default function HomePage() {
+  // Traemos los productos reales de Supabase
+  const { products, loading } = useProducts();
+  
+  // Agarramos solo los primeros 4 para mostrar en destacados
+  const featuredProducts = products.slice(0, 4);
+
   return (
     <div className="min-h-screen bg-[#121212]">
       
-      {/* PUNTO 1: Hero Gigante (MODULAR) */}
+      {/* PUNTO 1: Hero Gigante */}
       <HeroSection />
 
-      {/* PUNTO 2: Tira de Beneficios (MODULAR) */}
+      {/* PUNTO 2: Tira de Beneficios */}
       <BenefitsBanner />
 
       <main className="max-w-300 mx-auto py-16 px-6">
@@ -63,53 +66,66 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* PUNTO 4: Productos Destacados */}
+        {/* PUNTO 4: Productos Destacados (Conectado a la Base de Datos) */}
         <section className="mb-20">
           <div className="flex justify-between items-center mb-10 border-b border-[#2a2a2a] pb-4">
             <h2 className="text-xl font-bold text-white uppercase tracking-wider">Ingresos más buscados</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <motion.div
-                key={product.id}
-                whileHover={{ y: -5 }}
-                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-lg hover:shadow-[0_0_30px_rgba(255,95,0,0.15)] transition-all"
-              >
-                <Link href={`/product/temp`}>
-                  <div className="relative aspect-4/5 bg-black p-4 flex items-center justify-center">
-                    <Image 
-                      src={product.img} 
-                      alt={product.name} 
-                      fill
-                      className="object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
-                      sizes="(max-width: 768px) 50vw, 25vw"
-                    />
-                  </div>
-                </Link>
-                
-                <div className="p-5 flex flex-col h-45">
-                  <p className="text-[#FF5F00] text-[10px] font-black uppercase tracking-widest mb-1">{product.detail}</p>
-                  <h3 className="text-white text-base font-bold mb-1 leading-snug line-clamp-2">{product.name}</h3>
+          {loading ? (
+            <div className="flex justify-center items-center h-48">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-[#FF5F00]"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {featuredProducts.map((product: Product) => (
+                <motion.div
+                  key={product.id}
+                  whileHover={{ y: -5 }}
+                  className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-lg hover:shadow-[0_0_30px_rgba(255,95,0,0.15)] transition-all flex flex-col"
+                >
+                  <Link href={`/product/${product.slug}`} className="block relative aspect-4/5 bg-black p-4 items-center justify-center">
+                    {product.images && product.images.length > 0 ? (
+                      <Image 
+                        src={product.images[0]} 
+                        alt={product.name} 
+                        fill
+                        className="object-cover p-4 group-hover:scale-105 transition-transform duration-500" 
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                      />
+                    ) : (
+                      <div className="text-gray-500 text-xs">Sin imagen</div>
+                    )}
+                  </Link>
                   
-                  <div className="mt-auto flex justify-between items-end">
-                    <p className="text-white text-2xl font-black">${product.price.toLocaleString('es-AR')}</p>
+                  <div className="p-5 flex flex-col flex-1">
+                    {/* Usamos el nombre de la categoría real, o "Nuevo Ingreso" por defecto */}
+                    <p className="text-[#FF5F00] text-[10px] font-black uppercase tracking-widest mb-1">
+                      {product.category?.name || 'NUEVO INGRESO'}
+                    </p>
+                    <h3 className="text-white text-base font-bold mb-1 leading-snug line-clamp-2">
+                      {product.name}
+                    </h3>
+                    
+                    <div className="mt-auto pt-4 flex justify-between items-end">
+                      <p className="text-white text-2xl font-black">${product.price.toLocaleString('es-AR')}</p>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* PUNTO 5: Banners Intermedios (Split Banners) */}
+        {/* PUNTO 5: Banners Intermedios */}
         <SplitBanners />
 
       </main>
       
-      {/* PUNTO 6: Grilla Social (MODULAR) */}
+      {/* PUNTO 6: Grilla Social */}
       <SocialGrid />
       
-      {/* PUNTO 7: Newsletter (MODULAR) */}
+      {/* PUNTO 7: Newsletter */}
       <Newsletter />
       
     </div>
